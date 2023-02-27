@@ -15,8 +15,10 @@ export function getThresholdItems(fieldConfig: FieldConfig, theme: GrafanaTheme2
 
   for (let i = 1; i <= steps.length; i++) {
     const step = steps[i - 1];
+    const startVal = i === 1 ? "0m" : fmt(steps[i-1].value)+"m";
+    const endVal = i === steps.length ? "+" : "-"+fmt(steps[i].value)+"m";
     items.push({
-      label: i === 1 ? `< ${fmt(step.value)}` : `${fmt(step.value)}+`,
+      label: `${startVal}${endVal}`,
       color: theme.visualization.getColorByName(step.color),
       yAxis: 1,
     });

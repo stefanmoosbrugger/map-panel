@@ -65,7 +65,7 @@ export function MarkersLegend(props: MarkersLegendProps) {
   const items = getThresholdItems(color.field!.config, config.theme2);
   return (
     <div className={style.infoWrap}>
-      <Label>{color?.field?.name}</Label>
+      <Label>Stationshöhe</Label>
       <div className={style.legend}>
         {items.map((item: VizLegendItem, idx: number) => (
           <div key={`${idx}/${item.label}`} className={style.legendItem}>
