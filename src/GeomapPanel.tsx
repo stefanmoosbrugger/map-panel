@@ -210,7 +210,7 @@ export class GeomapPanel extends Component<Props, State> {
           hasLink = (fields[i].name === linkFieldName);
         }
         if(hasLink) {
-          const rowIndex = feature.getProperties()['rowIndex']-1;
+          const rowIndex = feature.getProperties()['rowIndex'];
           const uri = fields[i-1].values.buffer[rowIndex];
           console.log("rowIndex "+rowIndex);
           console.log("link "+uri);
