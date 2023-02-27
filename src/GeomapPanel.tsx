@@ -19,7 +19,6 @@ import {
   MapLayerHandler,
   PanelProps,
   GrafanaTheme,
-  DataHoverClearEvent,
   DataHoverEvent,
   DataFrame,
 } from '@grafana/data';
@@ -186,13 +185,46 @@ export class GeomapPanel extends Component<Props, State> {
     this.initControls(options.controls);
     this.initBasemap(options.basemap);
     await this.initLayers(options.layers);
-    this.forceUpdate(); // first render
+    this.forceUpdate(); // first render 
 
     // Tooltip listener
-    this.map.on('pointermove', this.pointerMoveListener);
-    this.map.getViewport().addEventListener('mouseout', (evt) => {
-      this.props.eventBus.publish(new DataHoverClearEvent());
+    this.map.on('singleclick', this.pointerClickListener);
+  };
+
+  pointerClickListener = (evt: MapBrowserEvent<UIEvent>) => {
+    if (!this.map) {
+      return;
+    }
+    var feature = this.map.forEachFeatureAtPixel(evt.pixel,
+      function(feature) {
+        return feature;
     });
+    if (feature) {    
+      console.log("click");
+      let props = feature.getProperties()['frame'];
+      console.log(props);
+      const fields = props["fields"];
+      if (fields && isArray(fields)) {
+        let hasLink = false;
+        const linkFieldName = "link";
+        let i=0;
+        for(;i<fields.length&&!hasLink;i++) { 
+          hasLink = (fields[i].name === linkFieldName);
+        }
+        if(hasLink) {
+          const rowIndex = feature.getProperties()['rowIndex']-1;
+          const uri = fields[i-1].values.buffer[rowIndex];
+          console.log("rowIndex "+rowIndex);
+          console.log("link "+uri);
+          window.open(uri,"_self");
+        } else {
+          console.log("no link");
+        }  
+      }
+      //console.log(feature);
+      //console.log(feature.getProperties()['frame']);
+      //console.log(feature.getProperties()['rowIndex']);
+    }
   };
 
   pointerMoveListener = (evt: MapBrowserEvent<UIEvent>) => {

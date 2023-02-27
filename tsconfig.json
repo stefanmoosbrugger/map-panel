@@ -6,6 +6,7 @@
     "baseUrl": "./src",
     "typeRoots": ["./node_modules/@types"],
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true
   }
 }
