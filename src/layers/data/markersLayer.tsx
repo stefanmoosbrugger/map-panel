@@ -346,7 +346,11 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       legend: legend,
       update: (data: PanelData) => {
         if (!data.series?.length) {
-          return; // ignore empty
+          geometryLayer?.getSource()?.clear();
+          var features = geometryLayer?.getSource()?.getFeatures();
+          features?.forEach((feature) => {
+            geometryLayer?.getSource()?.removeFeature(feature);
+          });          
         }
 
         const geometryFeatures: Array<Feature<Geometry>> = [];
