@@ -195,11 +195,9 @@ export class GeomapPanel extends Component<Props, State> {
     if (!this.map) {
       return;
     }
-    var feature = this.map.forEachFeatureAtPixel(evt.pixel,
-      function(feature) {
-        return feature;
-    });
-    if (feature) {    
+    const mouse = evt.originalEvent as any;
+    const pixel = this.map.getEventPixel(mouse);    
+    this.map.forEachFeatureAtPixel(pixel, (feature, layer, geo) => {
       console.log("click");
       let props = feature.getProperties()['frame'];
       console.log(props);
@@ -224,7 +222,7 @@ export class GeomapPanel extends Component<Props, State> {
       //console.log(feature);
       //console.log(feature.getProperties()['frame']);
       //console.log(feature.getProperties()['rowIndex']);
-    }
+    });
   };
 
   pointerMoveListener = (evt: MapBrowserEvent<UIEvent>) => {
