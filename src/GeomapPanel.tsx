@@ -224,6 +224,9 @@ export class GeomapPanel extends Component<Props, State> {
       //console.log(feature);
       //console.log(feature.getProperties()['frame']);
       //console.log(feature.getProperties()['rowIndex']);
+    },
+    {
+      hitTolerance: this.hitToler
     });
   };
 
@@ -278,9 +281,6 @@ export class GeomapPanel extends Component<Props, State> {
         }
       }
       features.push({ feature, layer, geo });
-    },
-    {
-      hitTolerance: this.hitToler
     });
     this.hoverPayload.features = features.length ? features : undefined;
     this.props.eventBus.publish(this.hoverEvent);
