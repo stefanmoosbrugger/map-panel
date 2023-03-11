@@ -56,6 +56,7 @@ export class GeomapPanel extends Component<Props, State> {
   globalCSS = getGlobalStyles(config.theme2);
 
   counter = 0;
+  hitToler?: number;
   map?: Map;
   basemap?: BaseLayer;
   layers: MapLayerState[] = [];
@@ -111,7 +112,7 @@ export class GeomapPanel extends Component<Props, State> {
     if (options.controls !== oldOptions.controls) {
       this.initControls(options.controls ?? { showZoom: true, showAttribution: true, showLayercontrol: true });
     }
-
+    
     if (options.basemap !== oldOptions.basemap) {
       this.initBasemap(options.basemap);
       layersChanged = true;
@@ -183,6 +184,7 @@ export class GeomapPanel extends Component<Props, State> {
     this.mouseWheelZoom = new MouseWheelZoom();
     this.map.addInteraction(this.mouseWheelZoom);
     this.initControls(options.controls);
+    this.hitToler = options.controls.hitTolerance;
     this.initBasemap(options.basemap);
     await this.initLayers(options.layers);
     this.forceUpdate(); // first render 
@@ -276,6 +278,9 @@ export class GeomapPanel extends Component<Props, State> {
         }
       }
       features.push({ feature, layer, geo });
+    },
+    {
+      hitTolerance: this.hitToler
     });
     this.hoverPayload.features = features.length ? features : undefined;
     this.props.eventBus.publish(this.hoverEvent);

@@ -21,6 +21,9 @@ export interface ControlsOptions {
 
   // Show debug
   showDebug?: boolean;
+
+  // hitTolerance
+  hitTolerance?: number;
 }
 
 export interface MapViewConfig {
