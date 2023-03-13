@@ -23,7 +23,7 @@ export function MarkersLegend(props: MarkersLegendProps) {
   const { color, name, unit } = props;
   const theme = useTheme2();
   
-  console.log("Construct MarkersLegend: "+name);
+  //console.log("Construct MarkersLegend: "+name);
 
   if (!color || (!color.field && color.fixed)) {
     return <></>;
@@ -67,7 +67,7 @@ export function MarkersLegend(props: MarkersLegendProps) {
   }
 
   const items = getThresholdItems(color.field!.config, config.theme2, unit!);
-  console.log("Return MarkersLegend: "+name);
+  //console.log("Return MarkersLegend: "+name);
   return (
     <div className={style.infoWrap}>
       <Label>{name}</Label>

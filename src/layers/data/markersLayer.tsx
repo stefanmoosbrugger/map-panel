@@ -319,13 +319,15 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       };
     }
 
-    function replaceThresholdInData(data: PanelData, thresholdOverride: string) {
+    function replaceThresholdInData(data: PanelData, thresholdOverride: string, fieldToChange: string) {
       let newThresholds = getNewThreshold(thresholdOverride);
       for (let frame of data.series) {
         for(let field of frame.fields) {
-          console.log(field.config.thresholds);
-          console.log(newThresholds);
-          field.config.thresholds = newThresholds;
+          if(field.name === fieldToChange) {
+            //console.log(field.config.thresholds);
+            //console.log(newThresholds);
+            field.config.thresholds = newThresholds;
+          }
         }
       }
     }
@@ -400,7 +402,8 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         const cluster = options.config?.cluster ?? defaultOptions.cluster;
 
         if (config.thresholdOverride) {
-          replaceThresholdInData(data,config.thresholdOverride);
+          let fieldToChange = options.config?.color.field ?? "";
+          replaceThresholdInData(data,config.thresholdOverride,fieldToChange);
         }
         for (let frame of data.series) {
           if ((options.query && options.query.options === frame.refId) || (frame.meta)) {

@@ -222,9 +222,9 @@ export class GeomapPanel extends Component<Props, State> {
     const mouse = evt.originalEvent as any;
     const pixel = this.map.getEventPixel(mouse);    
     this.map.forEachFeatureAtPixel(pixel, (feature, layer, geo) => {
-      console.log("click");
+      //console.log("click");
       let props = feature.getProperties()['frame'];
-      console.log(props);
+      //console.log(props);
       const fields = props["fields"];
       if (fields && isArray(fields)) {
         let hasLink = false;
@@ -236,8 +236,8 @@ export class GeomapPanel extends Component<Props, State> {
         if(hasLink) {
           const rowIndex = feature.getProperties()['rowIndex'];
           const uri = fields[i-1].values.buffer[rowIndex];
-          console.log("rowIndex "+rowIndex);
-          console.log("link "+uri);
+          //console.log("rowIndex "+rowIndex);
+          //console.log("link "+uri);
           window.open(uri,"_self");
         } else {
           console.log("no link");
