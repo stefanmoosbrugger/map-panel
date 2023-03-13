@@ -59,6 +59,7 @@ export class GeomapPanel extends Component<Props, State> {
   hitToler?: number;
   map?: Map;
   layerSwitcher?: LayerSwitcher;
+  doneFirstHide?: boolean;
   basemap?: BaseLayer;
   layers: MapLayerState[] = [];
   mouseWheelZoom?: MouseWheelZoom;
@@ -188,19 +189,31 @@ export class GeomapPanel extends Component<Props, State> {
     this.hitToler = options.controls.hitTolerance;
     this.initBasemap(options.basemap);
     await this.initLayers(options.layers);
+    // Hide all layers but the first base map and the first layer
+    this.map.on('rendercomplete', this.hideAllButFirstLayer);
+
     this.forceUpdate(); // first render 
 
     // Tooltip listener
     this.map.on('singleclick', this.pointerClickListener);
-    // Hide all layers but the first base map and the first layer
-    const layers = this.map.getLayers().getArray();
+  };
+
+  hideAllButFirstLayer = () => {
+    if (!this.map||this.doneFirstHide) {
+      return;
+    }
+    if(this.map!.getLayers().getArray().length===0) {
+      return;
+    }
+    const layers = this.map!.getLayers().getArray();
     let i = 0;
     for (let layer of layers) {
       if(i++>1) {
         layer.setVisible(false);
       }
     }
-  };
+    this.doneFirstHide = true;
+  }
 
   pointerClickListener = (evt: MapBrowserEvent<UIEvent>) => {
     if (!this.map) {
