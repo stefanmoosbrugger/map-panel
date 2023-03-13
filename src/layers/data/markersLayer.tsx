@@ -5,6 +5,8 @@ import {
   formattedValueToString,
   getScaleCalculator,
   getFieldColorModeForField,
+  Threshold,
+  ThresholdsMode
 } from '@grafana/data';
 import GeoMap from 'ol/Map';
 import Feature from 'ol/Feature';
@@ -48,6 +50,9 @@ export interface MarkersConfig {
   geoJsonStrokeSize: ScaleDimensionConfig;
   fillOpacity: number;
   shape?: string;
+  legendName?: string;
+  legendUnit?: string;
+  thresholdOverride?: string;
   showLegend?: boolean;
   showPin?: boolean;
   iconSize?: number;
@@ -87,6 +92,8 @@ const defaultOptions: MarkersConfig = {
   clusterDistance: 20,
   clusterMinDistance: 0,
   clusterValue: 'size',
+  legendName: 'Legend',
+  legendUnit: 'm'
 };
 
 export const MARKERS_LAYER_ID = 'markers';
@@ -292,6 +299,37 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       return styles;
     }
 
+    function getNewThreshold(override: string) {
+      const thresholdJson = JSON.parse(override);
+      // One more color than threshold
+      const thresholds: Threshold[] = [];
+      for (const entry of thresholdJson) {
+        const idx = thresholds.length - 1;
+        const level = parseInt(entry["value"],10);
+        const color = entry["color"];
+        if (idx >= 0) {
+          thresholds.push({ value: level, color });
+        } else {
+          thresholds.push({ value: -Infinity, color });
+        }
+      }
+      return {
+        mode: ThresholdsMode.Absolute,
+        steps: thresholds,
+      };
+    }
+
+    function replaceThresholdInData(data: PanelData, thresholdOverride: string) {
+      let newThresholds = getNewThreshold(thresholdOverride);
+      for (let frame of data.series) {
+        for(let field of frame.fields) {
+          console.log(field.config.thresholds);
+          console.log(newThresholds);
+          field.config.thresholds = newThresholds;
+        }
+      }
+    }
+
     const addOnLayer = options.config?.cluster
       ? new layer.Vector({
           displayProperties: options.displayProperties,
@@ -325,6 +363,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       layers: [geometryLayer, addOnLayer],
       title: options.name,
       combine: true,
+      type: 'base'
     } as GroupLayerOptions);
 
     // Assert default values
@@ -347,7 +386,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       update: (data: PanelData) => {
         if (!data.series?.length) {
           geometryLayer?.getSource()?.clear();
-          var features = geometryLayer?.getSource()?.getFeatures();
+          let features = geometryLayer?.getSource()?.getFeatures();
           features?.forEach((feature) => {
             geometryLayer?.getSource()?.removeFeature(feature);
           });          
@@ -360,7 +399,10 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         const showPin = options.config?.showPin ?? defaultOptions.showPin;
         const cluster = options.config?.cluster ?? defaultOptions.cluster;
 
-        for (const frame of data.series) {
+        if (config.thresholdOverride) {
+          replaceThresholdInData(data,config.thresholdOverride);
+        }
+        for (let frame of data.series) {
           if ((options.query && options.query.options === frame.refId) || (frame.meta)) {
             const info = dataFrameToPoints(frame, matchers);
             if (info.warning) {
@@ -369,8 +411,10 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
             }
 
             const colorDim = getColorDimension(frame, config.color, theme);
+            
             const sizeDim = getScaledDimension(frame, config.size);
-
+            const legendName = config.legendName;
+            const legendUnit = config.legendUnit;
             // Map each data value into new points
             for (let i = 0; i < frame.length; i++) {
               // Get the circle color for a specific data value depending on color scheme
@@ -427,7 +471,9 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
             if (legend) {
               legendProps.next({
                 color: colorDim,
-                size: sizeDim,
+                name: legendName,
+                unit: legendUnit,
+                size: sizeDim
               });
             }
             break; // Only the first frame for now!
@@ -518,6 +564,12 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         name: 'Show pin',
         description: 'Show pin',
         defaultValue: defaultOptions.showPin,
+      })
+      .addTextInput({
+        path: 'config.legendName',
+        name: 'Legend name',
+        description: 'Legend label',
+        defaultValue: defaultOptions.legendName,
       })
       .addSelect({
         path: 'config.pinShape',
@@ -634,7 +686,17 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
           ],
         },
         showIf: (cfg) => cfg.config?.cluster === true,
-      });
+      })
+      .addTextInput({
+        path: 'config.thresholdOverride',
+        name: 'Threshold Override',
+        description: 'Thershold Override'
+      })
+      .addTextInput({
+        path: 'config.legendUnit',
+        name: 'Legend unit',
+        description: 'Legend unit'
+      })
   },
 
   // fill in the default values

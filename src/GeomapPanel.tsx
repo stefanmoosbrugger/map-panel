@@ -58,6 +58,7 @@ export class GeomapPanel extends Component<Props, State> {
   counter = 0;
   hitToler?: number;
   map?: Map;
+  layerSwitcher?: LayerSwitcher;
   basemap?: BaseLayer;
   layers: MapLayerState[] = [];
   mouseWheelZoom?: MouseWheelZoom;
@@ -137,12 +138,12 @@ export class GeomapPanel extends Component<Props, State> {
     if (this.props.options.view.id === MapCenterID.Auto && this.map) {
       let extent = createEmpty();
       const layers = this.map.getLayers().getArray();
-      for (var layer of layers) {
+      for (let layer of layers) {
         if (layer instanceof VectorLayer) {
           let source = layer.getSource();
           if (source !== undefined && source instanceof Vector) {
             let features = source.getFeatures();
-            for (var feature of features) {
+            for (let feature of features) {
               let geo = feature.getGeometry();
               if (geo) {
                 extend(extent, geo.getExtent());
@@ -191,6 +192,14 @@ export class GeomapPanel extends Component<Props, State> {
 
     // Tooltip listener
     this.map.on('singleclick', this.pointerClickListener);
+    // Hide all layers but the first base map and the first layer
+    const layers = this.map.getLayers().getArray();
+    let i = 0;
+    for (let layer of layers) {
+      if(i++>1) {
+        layer.setVisible(false);
+      }
+    }
   };
 
   pointerClickListener = (evt: MapBrowserEvent<UIEvent>) => {
@@ -339,9 +348,20 @@ export class GeomapPanel extends Component<Props, State> {
         layer,
         handler,
       });
-
+      
       if (handler.legend) {
-        legends.push(<div key={`${this.counter++}`}>{handler.legend}</div>);
+        let str = `legend_${this.counter++}`;
+        legends.push(<div id={str} key={str}>{handler.legend}</div>);
+        layer.on('change:visible', function() { 
+          let x = document.getElementById(str);
+          if(x) {
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+          }
+        });
       }
     }
     this.setState({ bottomLeft: legends });
@@ -415,27 +435,26 @@ export class GeomapPanel extends Component<Props, State> {
     }
 
     if (options.showLayercontrol) {
-      this.map.addControl(
-        new LayerSwitcher({
-          label: 'L',
-          tipLabel: 'Select layers',
-          groupSelectStyle: 'none',
-          activationMode: 'click',
-        })
-      );
+      this.layerSwitcher = new LayerSwitcher({
+        label: 'L',
+        tipLabel: 'Select layers',
+        groupSelectStyle: 'none',
+        activationMode: 'click',
+      });
+      this.map.addControl(this.layerSwitcher);
     }
 
     const map = this.map;
 
-    var zoomCluster = function (pixel: number[]) {
-      var feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+    let zoomCluster = function (pixel: number[]) {
+      let feature = map.forEachFeatureAtPixel(pixel, function (feature) {
         return feature;
       });
 
       if (feature) {
-        var features = feature.get('features');
+        let features = feature.get('features');
         if (features && features.length > 1) {
-          var extent = createEmpty();
+          let extent = createEmpty();
           features.forEach(function (f: any) {
             extend(extent, f.getGeometry().getExtent());
           });

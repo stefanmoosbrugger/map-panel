@@ -14,12 +14,16 @@ import { getThresholdItems } from './utils';
 
 export interface MarkersLegendProps {
   color?: DimensionSupplier<string>;
+  name?: string;
+  unit?: string;
   size?: DimensionSupplier<number>;
 }
 
 export function MarkersLegend(props: MarkersLegendProps) {
-  const { color } = props;
+  const { color, name, unit } = props;
   const theme = useTheme2();
+  
+  console.log("Construct MarkersLegend: "+name);
 
   if (!color || (!color.field && color.fixed)) {
     return <></>;
@@ -62,10 +66,11 @@ export function MarkersLegend(props: MarkersLegendProps) {
     return <div></div>; // don't show anything in the legend
   }
 
-  const items = getThresholdItems(color.field!.config, config.theme2);
+  const items = getThresholdItems(color.field!.config, config.theme2, unit!);
+  console.log("Return MarkersLegend: "+name);
   return (
     <div className={style.infoWrap}>
-      <Label>Stationshöhe</Label>
+      <Label>{name}</Label>
       <div className={style.legend}>
         {items.map((item: VizLegendItem, idx: number) => (
           <div key={`${idx}/${item.label}`} className={style.legendItem}>
