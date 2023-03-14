@@ -323,6 +323,9 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       let newThresholds = getNewThreshold(thresholdOverride);
       for (let frame of data.series) {
         for(let field of frame.fields) {
+          console.log(field.name)
+          console.log(fieldToChange);
+          console.log(field.name===fieldToChange);
           if(field.name === fieldToChange) {
             //console.log(field.config.thresholds);
             //console.log(newThresholds);
