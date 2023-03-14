@@ -1,8 +1,15 @@
+.ol-control.layer-switcher:hover {
+  background: rgba(81,81,81,0.81);
+}
+
 .ol-control.layer-switcher {
   top: 0.5em;
   right: 0.5em;
   text-align: right;
+  background: rgba(81,81,81,0.81);
+  color: #ccccdc;
 }
+
 .ol-control.layer-switcher.shown.layer-switcher-activation-mode-click {
   padding-right: 0.5em;
 }
@@ -25,6 +32,9 @@
   list-style: none;
 }
 
+.ol-control.layer-switcher li.layer > input {
+  margin-right: 3px;
+}
 
 .data-layer-add { 
     display: flex;
