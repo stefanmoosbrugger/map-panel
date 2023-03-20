@@ -59,7 +59,6 @@ export class GeomapPanel extends Component<Props, State> {
   hitToler?: number;
   map?: Map;
   layerSwitcher?: LayerSwitcher;
-  doneFirstHide?: boolean;
   basemap?: BaseLayer;
   layers: MapLayerState[] = [];
   mouseWheelZoom?: MouseWheelZoom;
@@ -199,7 +198,7 @@ export class GeomapPanel extends Component<Props, State> {
   };
 
   hideAllButFirstLayer = () => {
-    if (!this.map||this.doneFirstHide) {
+    if (!this.map) {
       return;
     }
     if(this.map!.getLayers().getArray().length===0) {
@@ -212,7 +211,7 @@ export class GeomapPanel extends Component<Props, State> {
         layer.setVisible(false);
       }
     }
-    this.doneFirstHide = true;
+    this.map.un('rendercomplete', this.hideAllButFirstLayer);
   }
 
   pointerClickListener = (evt: MapBrowserEvent<UIEvent>) => {

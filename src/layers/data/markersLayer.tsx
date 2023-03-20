@@ -64,6 +64,8 @@ export interface MarkersConfig {
   clusterMinDistance?: number;
   clusterValue?: string;
   selectIcon?: any;
+  displayValue?: boolean;
+  displayValueSize?: number;
 }
 
 const defaultOptions: MarkersConfig = {
@@ -400,6 +402,8 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
         const showPin = options.config?.showPin ?? defaultOptions.showPin;
         const cluster = options.config?.cluster ?? defaultOptions.cluster;
+        const displayValue = options.config?.displayValue ?? false;
+        const displayValueSize = options.config?.displayValueSize ?? 10;
 
         if (config.thresholdOverride) {
           let fieldToChange = options.config?.color.field ?? "";
@@ -414,8 +418,8 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
             }
 
             const colorDim = getColorDimension(frame, config.color, theme);
-            
             const sizeDim = getScaledDimension(frame, config.size);
+            const vals = findField(frame, config.color.field);
             const legendName = config.legendName;
             const legendUnit = config.legendUnit;
             // Map each data value into new points
@@ -432,7 +436,27 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                 const geoType = info.points[i].getType();
                 const geometry = new Feature(info.points[i]);
                 if (geoType === 'Point') {
-                  geometry.setStyle(shape!.make(color, fillColor, radius));
+                  let st = shape!.make(color, fillColor, radius);
+                  if(displayValue) {
+                    let styleFunc = function () {
+                      if((map.getView().getZoom()??0)<displayValueSize) {
+                        return [st];
+                      }
+                      let labelStyle = new Style({
+                        text: new Text({
+                          font: '10px Calibri,sans-serif',
+                          offsetY: 20,
+                          fill: new Fill({ color: '#FFF' }),
+                          text: 'Some text!'
+                        })
+                      });
+                      labelStyle.getText().setText(vals?.values.get(i)+" "+legendUnit);
+                      return [st, labelStyle];
+                    };
+                    geometry.setStyle(styleFunc);
+                  } else {
+                    geometry.setStyle(st);
+                  }
                 } else {
                   const strokeSize = getScaledDimension(frame, config.geoJsonStrokeSize);
                   let style = new Style({
@@ -644,6 +668,18 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         name: 'Show legend',
         description: 'Show legend',
         defaultValue: defaultOptions.showLegend,
+      })
+      .addBooleanSwitch({
+        path: 'config.displayValue',
+        name: 'Display Value',
+        description: 'Display Value',
+        defaultValue: false,
+      })
+      .addNumberInput({
+        path: 'config.displayValueSize',
+        name: 'Display value size',
+        defaultValue: 8,
+        showIf: (cfg) => cfg.config?.displayValue === true,
       })
       .addBooleanSwitch({
         path: 'config.cluster',
