@@ -444,9 +444,9 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                       }
                       let labelStyle = new Style({
                         text: new Text({
-                          font: '10px Calibri,sans-serif',
+                          font: '12px Calibri,sans-serif',
                           offsetY: 20,
-                          fill: new Fill({ color: '#FFF' }),
+                          fill: new Fill({ color: '#000' }),
                           text: 'Some text!'
                         })
                       });
