@@ -12,6 +12,7 @@ import VectorLayer from 'ol/layer/Vector';
 import { Vector } from 'ol/source';
 import LayerSwitcher from 'ol-layerswitcher';
 import { isArray, isEqual } from 'lodash';
+import Link from 'ol/interaction/Link';
 import './GeomapPanel.css';
 
 import {
@@ -195,6 +196,8 @@ export class GeomapPanel extends Component<Props, State> {
 
     // Tooltip listener
     this.map.on('singleclick', this.pointerClickListener);
+
+    this.map.addInteraction(new Link());
   };
 
   hideAllButFirstLayer = () => {
@@ -234,7 +237,14 @@ export class GeomapPanel extends Component<Props, State> {
         }
         if(hasLink) {
           const rowIndex = feature.getProperties()['rowIndex'];
-          const uri = fields[i-1].values.buffer[rowIndex];
+          let uri = fields[i-1].values.buffer[rowIndex];
+          const urlParams = new URLSearchParams(window.location.search);
+          const x = urlParams.get('x');
+          const y = urlParams.get('y');
+          const z = urlParams.get('z');
+          const r = urlParams.get('r');
+          const l = urlParams.get('l');
+          uri += "&var-x="+x+"&var-y="+y+"&var-z="+z+"&var-r="+r+"&var-l="+l;
           //console.log("rowIndex "+rowIndex);
           //console.log("link "+uri);
           window.open(uri,"_self");
